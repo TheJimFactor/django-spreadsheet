@@ -1,0 +1,199 @@
+<html lang="en">
+    <head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/static/js/jquery.handsontable.full.js"></script>
+<!--<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>-->
+<link href="/static/css/jquery.handsontable.full.css" type="text/css" media="all" rel="stylesheet" />
+<link href="/static/css/samples.css" type="text/css" media="all" rel="stylesheet" />
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+function sameOrigin(url) {
+    // test that a given url is a same-origin URL
+    // url could be relative or scheme relative or absolute
+    var host = document.location.host; // host + port
+    var protocol = document.location.protocol;
+    var sr_origin = '//' + host;
+    var origin = protocol + sr_origin;
+    // Allow absolute or scheme relative URLs to same origin
+    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+        (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+        // or any other URL that isn't scheme relative or absolute i.e relative.
+        !(/^(\/\/|http:|https:).*/.test(url));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+            // Send the token to same-origin, relative URLs only.
+            // Send the token only if the method warrants CSRF protection
+            // Using the CSRFToken value acquired earlier
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+})
+</script>
+</head>
+
+<body>
+    <script type="text/javascript">
+$(document).ready(function () {
+
+  var data = [
+    ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
+    ["2009", 0, 2941, 4303, 354, 5814],
+    ["2010", 5, 2905, 2867, 412, 5284],
+    ["2011", 4, 2517, 4822, 552, 6127],
+    ["2012", 2, 2422, 5399, 776, 4151]
+  ];
+  
+  $('#example2').handsontable({
+    data: data,
+    minSpareRows: 1,
+    colHeaders: true,
+    contextMenu: true
+  });
+  
+  function bindDumpButton() {
+      $('body').on('click', 'button[name=dump]', function () {
+        var dump = $(this).data('dump');
+        var $container = $(dump);
+        console.log('data of ' + dump, $container.handsontable('getData'));
+      });
+    }
+  bindDumpButton();
+  
+
+});
+    </script>
+    <!-- look to http://stackoverflow.com/questions/10035627/django-reading-array-of-json-objects-from-querydict  for django jquery funkiness--> 
+<script>
+$(document).ready(function() {
+    var $container = $("#example2");
+    var handsontable = $container.data('handsontable');
+    var $console = $("#example1console");
+    <!--http://stackoverflow.com/questions/10989342/get-the-javascript-array-in-django-->
+    <!-- traditional settings to make jquery work with django nicer -->
+    $.ajaxSettings.traditional = true;
+    $('#savesheet').click(function(){
+        var json1 = {"doc":[
+            {"name":"fred"},
+            {"name":"bob"}
+            ]
+        };
+        <!--alert(typeof(json1));-->
+        <!--alert(xinspect(json1));-->
+        <!--alert(xinspect(handsontable.getData()));-->
+  var data = [
+    ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
+    ["2009", 0, 2941, 4303, 354, 5814],
+    ["2010", 5, 2905, 2867, 412, 5284],
+    ["2011", 4, 2517, 4822, 552, 6127],
+    ["2012", 2, 2422, 5399, 776, 4151]
+  ];
+  alert(xinspect(data));
+        <!--$.post('/sheets/savesheet/', {'data':handsontable.getData()});-->
+        <!--$.post('/sheets/savesheet/', datahandsontable.getData());-->
+        <!--$.post('/sheets/savesheet/', json1)-->
+        jQuery.ajax ({
+            url: '/sheets/savesheet/',
+            type: "POST",
+            data: {"data": handsontable.getData()},
+            <!--data: {data:[handsontable.getData()]},-->
+            dataType: "json",
+            <!--testing-->
+            <!--data: {"bullshit":[{'fuck':'this'}]},-->
+            <!--data: {name:"John", location: "Boston"},-->
+            <!-- send data as a string so python doesnt dict it -->
+            <!--data: '{"name":"John", "location": "Boston"}',-->
+            <!--data: json1,-->
+            <!--data: handsontable.getData(),-->
+            <!--TODO: Content type current breaks so left out -->
+            <!--contentType: "application/json; charset=utf-8",-->
+            <!--success: function(){-->
+
+            <!--double comment this out-->
+            <!--data: {'[{"name":4}, {"height":6}]'},-->
+                
+            <!--}-->
+        });
+    });
+    $('#loadsheet').click(function(){
+          $console.text('Data loading');
+
+      $.ajax({
+        url: "/sheets/loadsheet/",
+        dataType: 'json',
+        type: 'GET',
+        success: function (res) {
+            <!--alert(res);-->
+            <!--alert(res.data);-->
+<!--alert(typeof(res));-->
+    alert(xinspect(res));
+            <!--alert(res.data[0]);-->
+            <!--alert(res.getOwnPropertyNames())-->
+          <!--handsontable.loadData(res.data);-->
+          var tempdata = [
+             ["woot", "hehe"]
+             ];
+            var tempdata2 = {"bindings": [
+            {"event":"privmsg"}
+            ]
+            };
+            alert(tempdata2.bindings[0].event);
+          <!--handsontable.loadData(tempdata2.bindings);-->
+          <!--handsontable.loadData(tempdata2.bindings);-->
+          <!--handsontable.loadData(res.data);-->
+          handsontable.loadData(res);
+          $console.text('Data loaded');
+        }
+      });
+    });
+    function xinspect(o,i){
+        if(typeof i=='undefined')i='';
+        if(i.length>50)return '[MAX ITERATIONS]';
+        var r=[];
+        for(var p in o){
+            var t=typeof o[p];
+            r.push(i+'"'+p+'" ('+t+') => '+(t=='object' ? 'object:'+xinspect(o[p],i+'  ') : o[p]+''));
+        }
+        return r.join(i+'\n');
+    }
+
+    // example of use:
+
+});
+
+</script>
+
+    <h2>Basic usage</h2>
+    <div id="example" class="handsontable"></div>
+    <h2>Try 2</h2>
+    <div id="example2" class="handsontable"></div>
+    <pre id="example1console" class="console">Click "Load" to load data from server</pre>
+<form>
+{% csrf_token %}
+</form>
+    <button id="savesheet" value="save sheet">Save sheet</button>
+    <button id="loadsheet" value="load sheet">load sheet</button>
+</body>
+</html>
